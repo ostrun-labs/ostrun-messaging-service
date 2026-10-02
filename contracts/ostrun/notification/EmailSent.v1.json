@@ -1,31 +1,31 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/ostrun-labs/ostrun-notification-service/contracts/ostrun/notification/EmailSent.v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ostrun.dev/contracts/ostrun/notification/EmailSent.v1.json",
   "title": "Ostrun.Notification.EmailSent",
   "version": 1,
-  "description": "Published when the Notification service successfully sends an email.",
+  "description": "Published by the Notification service after it sends an email triggered by an upstream event.",
   "type": "object",
+  "additionalProperties": false,
+  "required": ["userId", "email", "sourceEvent", "sentAt"],
   "properties": {
     "userId": {
       "type": "string",
       "format": "uuid",
-      "description": "Identifier of the recipient user"
+      "description": "Id of the recipient user."
     },
     "email": {
       "type": "string",
       "format": "email",
-      "description": "Recipient email address"
+      "description": "Recipient email address."
     },
     "sourceEvent": {
       "type": "string",
-      "description": "Full name of the event that triggered the send (e.g. Ostrun.Auth.UserRegistered)"
+      "description": "Full name of the upstream event that triggered this email (e.g. Ostrun.Auth.UserRegistered)."
     },
     "sentAt": {
       "type": "string",
       "format": "date-time",
-      "description": "UTC timestamp of the send (ISO 8601)"
+      "description": "UTC timestamp of the send."
     }
-  },
-  "required": ["userId", "email", "sourceEvent", "sentAt"],
-  "additionalProperties": false
+  }
 }
