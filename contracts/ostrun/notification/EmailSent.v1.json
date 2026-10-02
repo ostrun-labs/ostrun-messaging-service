@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ostrun-labs/ostrun-notification-service/contracts/ostrun/notification/EmailSent.v1.json",
+  "title": "Ostrun.Notification.EmailSent",
+  "version": 1,
+  "description": "Published when the Notification service successfully sends an email.",
+  "type": "object",
+  "properties": {
+    "userId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identifier of the recipient user"
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "Recipient email address"
+    },
+    "sourceEvent": {
+      "type": "string",
+      "description": "Full name of the event that triggered the send (e.g. Ostrun.Auth.UserRegistered)"
+    },
+    "sentAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC timestamp of the send (ISO 8601)"
+    }
+  },
+  "required": ["userId", "email", "sourceEvent", "sentAt"],
+  "additionalProperties": false
+}
