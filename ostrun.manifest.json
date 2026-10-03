@@ -71,6 +71,12 @@
       "description": "RabbitMQ host. If absent, events use the in-memory transport (no broker required standalone)"
     },
     {
+      "name": "RabbitMq__Port",
+      "required": false,
+      "default": "5672",
+      "description": "RabbitMQ port"
+    },
+    {
       "name": "RabbitMq__VirtualHost",
       "required": false,
       "description": "RabbitMQ virtual host (default: /)"

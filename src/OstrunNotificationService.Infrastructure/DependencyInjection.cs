@@ -34,7 +34,7 @@ public static class DependencyInjection
             {
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host(rabbitMq.Host, rabbitMq.VirtualHost, h =>
+                    cfg.Host(rabbitMq.Host, rabbitMq.Port, rabbitMq.VirtualHost, h =>
                     {
                         h.Username(rabbitMq.Username);
                         h.Password(rabbitMq.Password);
