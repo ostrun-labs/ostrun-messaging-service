@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using OstrunNotificationService.Application.Abstractions;
+using OstrunNotificationService.Infrastructure.Email;
 using OstrunNotificationService.Infrastructure.Events;
 using RabbitMQ.Client;
 using Testcontainers.PostgreSql;
@@ -41,6 +43,9 @@ public sealed class NotificationApiFactory : WebApplicationFactory<Program>, IAs
         .Build();
 
     private readonly ConsumedCounter _consumed = new();
+
+    // Lets a test make SMTP sends fail for a given recipient.
+    public SmtpFaults SmtpFaults { get; } = new();
     private HttpClient _mailpitApi = null!;
     private IConnection _rabbitMqConnection = null!;
 
@@ -75,7 +80,11 @@ public sealed class NotificationApiFactory : WebApplicationFactory<Program>, IAs
 
     protected override void ConfigureWebHost(IWebHostBuilder builder) =>
         builder.ConfigureTestServices(services =>
-            services.Configure<MassTransitHostOptions>(options => options.WaitUntilStarted = true));
+        {
+            services.Configure<MassTransitHostOptions>(options => options.WaitUntilStarted = true);
+            services.AddScoped<SmtpEmailSender>();
+            services.AddScoped<IEmailSender>(sp => new FaultInjectingEmailSender(sp.GetRequiredService<SmtpEmailSender>(), SmtpFaults));
+        });
 
     // Publishes the event the way ostrun-auth-service does: raw JSON on the
     // Ostrun.Auth.UserRegistered exchange, no MassTransit envelope.
@@ -102,15 +111,39 @@ public sealed class NotificationApiFactory : WebApplicationFactory<Program>, IAs
         }
     }
 
-    // Binds a temporary queue to the EmailSent exchange. Call before publishing.
-    public async Task<EmailSentListener> ListenForEmailSentAsync()
+    // Binds a temporary queue to the EmailSent exchange and keeps the events
+    // for this user. Call before publishing.
+    public async Task<EmailSentListener> ListenForEmailSentAsync(Guid userId)
     {
         var channel = await _rabbitMqConnection.CreateChannelAsync();
         const string exchange = "Ostrun.Notification.EmailSent";
         await channel.ExchangeDeclareAsync(exchange, ExchangeType.Fanout, durable: true);
         var queue = await channel.QueueDeclareAsync(exclusive: true);
         await channel.QueueBindAsync(queue.QueueName, exchange, routingKey: string.Empty);
-        return new EmailSentListener(channel, queue.QueueName);
+        return new EmailSentListener(channel, queue.QueueName, userId);
+    }
+
+    // Messages MassTransit moved to the consumer's error queue, i.e. given up on.
+    public async Task<uint> ErrorQueueCountAsync()
+    {
+        await using var channel = await _rabbitMqConnection.CreateChannelAsync();
+        try
+        {
+            return (await channel.QueueDeclarePassiveAsync("user-registered_error")).MessageCount;
+        }
+        catch (RabbitMQ.Client.Exceptions.OperationInterruptedException)
+        {
+            return 0; // MassTransit creates the error queue on the first failure.
+        }
+    }
+
+    public async Task WaitForErrorQueueCountAsync(uint count)
+    {
+        using var cts = new CancellationTokenSource(Timeout);
+        while (await ErrorQueueCountAsync() < count)
+        {
+            await Task.Delay(100, cts.Token);
+        }
     }
 
     public async Task<IReadOnlyList<MailpitMessage>> MessagesToAsync(string email)
@@ -163,19 +196,39 @@ public sealed class NotificationApiFactory : WebApplicationFactory<Program>, IAs
     }
 }
 
-public sealed class EmailSentListener(IChannel channel, string queue) : IAsyncDisposable
+public sealed class EmailSentListener(IChannel channel, string queue, Guid userId) : IAsyncDisposable
 {
-    // Everything published to Ostrun.Notification.EmailSent since the listener
-    // was created, as raw JSON.
+    private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
+    private readonly List<JsonElement> _received = [];
+
+    // Every Ostrun.Notification.EmailSent for this user since the listener was
+    // created, as raw JSON. Events for other users are dropped: an earlier
+    // test's event can still arrive while this one runs.
     public async Task<IReadOnlyList<JsonElement>> DrainAsync()
     {
-        var messages = new List<JsonElement>();
         while (await channel.BasicGetAsync(queue, autoAck: true) is { } result)
         {
-            messages.Add(JsonDocument.Parse(result.Body).RootElement.Clone());
+            var message = JsonDocument.Parse(result.Body).RootElement.Clone();
+            if (message.GetProperty("userId").GetGuid() == userId)
+            {
+                _received.Add(message);
+            }
         }
 
-        return messages;
+        return _received;
+    }
+
+    // EmailSent is the last thing the service does for an event, so once it
+    // arrives the email has gone out and the row is saved.
+    public async Task<IReadOnlyList<JsonElement>> WaitForAsync(int count)
+    {
+        using var cts = new CancellationTokenSource(Timeout);
+        while ((await DrainAsync()).Count < count)
+        {
+            await Task.Delay(100, cts.Token);
+        }
+
+        return _received;
     }
 
     public async ValueTask DisposeAsync() => await channel.DisposeAsync();

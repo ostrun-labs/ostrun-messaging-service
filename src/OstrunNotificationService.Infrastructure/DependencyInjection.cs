@@ -28,7 +28,15 @@ public static class DependencyInjection
         services.AddMassTransit(x =>
         {
             x.SetKebabCaseEndpointNameFormatter();
-            x.AddConsumer<UserRegisteredConsumer>();
+            x.AddConsumer<UserRegisteredConsumer>(consumer => consumer.UseMessageRetry(r =>
+            {
+                // Rides out a short SMTP or database outage: 5 retries, backing
+                // off from 1s up to 30s, before the message goes to the error queue.
+                r.Exponential(5, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(2));
+
+                // A malformed recipient address fails the same way every time.
+                r.Ignore<MimeKit.ParseException>();
+            }));
 
             if (!string.IsNullOrWhiteSpace(rabbitMq.Host))
             {

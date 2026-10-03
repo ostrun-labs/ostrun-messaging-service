@@ -12,7 +12,7 @@ public class UserRegisteredTests(NotificationApiFactory factory)
     {
         var userId = Guid.NewGuid();
         var email = $"{userId}@ostrun.dev";
-        await using var emailSent = await factory.ListenForEmailSentAsync();
+        await using var emailSent = await factory.ListenForEmailSentAsync(userId);
 
         await factory.PublishUserRegisteredAsync(userId, email);
         await factory.WaitUntilConsumedAsync(userId, times: 1);
@@ -36,7 +36,7 @@ public class UserRegisteredTests(NotificationApiFactory factory)
     {
         var userId = Guid.NewGuid();
         var email = $"{userId}@ostrun.dev";
-        await using var emailSent = await factory.ListenForEmailSentAsync();
+        await using var emailSent = await factory.ListenForEmailSentAsync(userId);
 
         await factory.PublishUserRegisteredAsync(userId, email);
         await factory.WaitUntilConsumedAsync(userId, times: 1);
