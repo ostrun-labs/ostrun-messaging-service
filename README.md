@@ -34,6 +34,7 @@ Light Clean Architecture in 4 layers:
 - `src/OstrunNotificationService.Infrastructure`: EF Core + Npgsql, SMTP sending (MailKit), event publishing/consuming via MassTransit + RabbitMQ
 - `src/OstrunNotificationService.Api`: .NET 8 Minimal APIs (`/health`)
 - `tests/OstrunNotificationService.UnitTests`: unit tests for the Application layer, the MassTransit consumer and the published event contract
+- `tests/OstrunNotificationService.IntegrationTests`: runs the real service against throwaway Postgres, RabbitMQ and Mailpit containers (Testcontainers), publishes `Ostrun.Auth.UserRegistered` and checks the email, the stored row and the published `EmailSent`
 
 ## Running locally
 
@@ -48,6 +49,6 @@ The API listens on `http://localhost:8082` (`/health`). EF Core migrations apply
 
 ```bash
 dotnet build
-dotnet test
+dotnet test   # integration tests need Docker running
 dotnet tool run dotnet-ef migrations add <Name> --project src/OstrunNotificationService.Infrastructure --startup-project src/OstrunNotificationService.Api --output-dir Persistence/Migrations
 ```
