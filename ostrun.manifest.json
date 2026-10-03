@@ -35,7 +35,8 @@
     {
       "name": "Smtp__Port",
       "required": false,
-      "description": "SMTP port (default: 587)"
+      "default": "587",
+      "description": "SMTP port"
     },
     {
       "name": "Smtp__Username",
@@ -50,7 +51,8 @@
     {
       "name": "Smtp__UseStartTls",
       "required": false,
-      "description": "Enables STARTTLS (default: true)"
+      "default": "true",
+      "description": "Enables STARTTLS"
     },
     {
       "name": "Smtp__FromAddress",
@@ -60,7 +62,8 @@
     {
       "name": "Smtp__FromName",
       "required": false,
-      "description": "Displayed sender name (default: Ostrun)"
+      "default": "Ostrun",
+      "description": "Displayed sender name"
     },
     {
       "name": "RabbitMq__Host",
