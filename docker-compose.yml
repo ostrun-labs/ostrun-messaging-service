@@ -8,7 +8,7 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - ostrun-notification-postgres-data:/var/lib/postgresql/data
+      - ostrun-messaging-postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -28,7 +28,7 @@ services:
       dockerfile: Dockerfile
     environment:
       ASPNETCORE_URLS: ${ASPNETCORE_URLS}
-      ConnectionStrings__Notification: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      ConnectionStrings__Messaging: Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       Smtp__Host: ${SMTP_HOST}
       Smtp__Port: ${SMTP_PORT}
       Smtp__Username: ${SMTP_USERNAME}
@@ -45,4 +45,4 @@ services:
         condition: service_started
 
 volumes:
-  ostrun-notification-postgres-data:
+  ostrun-messaging-postgres-data:
