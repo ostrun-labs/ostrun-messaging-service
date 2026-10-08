@@ -18,10 +18,10 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Restore
-        run: dotnet restore OstrunNotificationService.sln
+        run: dotnet restore OstrunMessagingService.sln
 
       - name: Build
-        run: dotnet build OstrunNotificationService.sln --no-restore --configuration Release
+        run: dotnet build OstrunMessagingService.sln --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test OstrunNotificationService.sln --no-build --configuration Release
+        run: dotnet test OstrunMessagingService.sln --no-build --configuration Release

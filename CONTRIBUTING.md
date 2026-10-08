@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in improving the Ostrun Notification service.
+Thanks for your interest in improving the Ostrun Messaging service.
 
 ## Before you start
 
