@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "displayName": "Ostrun Notification",
   "description": "Ostrun reference notification service: sends emails triggered by other services' events (e.g. user registration).",
-  "repository": "https://github.com/ostrun-labs/ostrun-notification-service",
+  "repository": "https://github.com/ostrun-labs/ostrun-messaging-service",
   "registry": null,
   "needsDb": true,
   "events": {

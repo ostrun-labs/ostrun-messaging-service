@@ -1,4 +1,4 @@
-# ostrun-notification-service
+# ostrun-messaging-service
 
 Reference Notification service for [Ostrun](https://github.com/ostrun-labs/ostrun), provider `Ostrun`, service `notification`.
 
