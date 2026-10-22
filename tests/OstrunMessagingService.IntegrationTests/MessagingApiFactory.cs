@@ -36,7 +36,7 @@ public sealed class MessagingApiFactory : WebApplicationFactory<Program>, IAsync
         .WithPassword(RabbitMqPassword)
         .Build();
 
-    private readonly IContainer _mailpit = new ContainerBuilder("axllent/mailpit:latest")
+    private readonly IContainer _mailpit = new ContainerBuilder("axllent/mailpit:v1.31.6")
         .WithPortBinding(MailpitSmtpPort, true)
         .WithPortBinding(MailpitApiPort, true)
         .WithWaitStrategy(Wait.ForUnixContainer().UntilHttpRequestIsSucceeded(r => r.ForPort(MailpitApiPort).ForPath("/livez")))
