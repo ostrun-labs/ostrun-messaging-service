@@ -1,3 +1,6 @@
+// Handles the UserRegistered event: sends the welcome email once per user (idempotent),
+// records it and publishes EmailSent. Event data is HTML-encoded before entering the body.
+using System.Net;
 using OstrunMessagingService.Application.Abstractions;
 using OstrunMessagingService.Domain.Entities;
 
@@ -22,7 +25,7 @@ public sealed class MessagingService(
         var message = new EmailMessage(
             userRegistered.Email,
             "Welcome to Ostrun",
-            $"<p>Hi,</p><p>Your Ostrun account has been created with the address {userRegistered.Email}.</p>");
+            $"<p>Hi,</p><p>Your Ostrun account has been created with the address {WebUtility.HtmlEncode(userRegistered.Email)}.</p>");
 
         await emailSender.SendAsync(message, cancellationToken);
 

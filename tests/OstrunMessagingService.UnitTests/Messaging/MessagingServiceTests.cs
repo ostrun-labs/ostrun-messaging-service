@@ -50,4 +50,19 @@ public class MessagingServiceTests
         await _emailSender.DidNotReceive().SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
         await _eventPublisher.DidNotReceive().PublishEmailSentAsync(Arg.Any<EmailSentEvent>(), Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task HandleUserRegisteredAsync_WhenEmailContainsHtml_EncodesItInTheBody()
+    {
+        var userId = Guid.NewGuid();
+        _sentEmailRepository.ExistsAsync("Ostrun.Auth.UserRegistered", userId, Arg.Any<CancellationToken>()).Returns(false);
+
+        await _sut.HandleUserRegisteredAsync(
+            new UserRegisteredEvent(userId, "\"<b>x</b>\"@example.com", DateTime.UtcNow), CancellationToken.None);
+
+        await _emailSender.Received(1).SendAsync(
+            Arg.Is<EmailMessage>(m =>
+                m.HtmlBody.Contains("&quot;&lt;b&gt;x&lt;/b&gt;&quot;@example.com") && !m.HtmlBody.Contains("<b>")),
+            Arg.Any<CancellationToken>());
+    }
 }
