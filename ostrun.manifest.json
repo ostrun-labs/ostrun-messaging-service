@@ -7,6 +7,7 @@
   "repository": "https://github.com/ostrun-labs/ostrun-messaging-service",
   "registry": null,
   "needsDb": true,
+  "needsSmtp": true,
   "events": {
     "published": [
       "Ostrun.Messaging.EmailSent"
@@ -30,11 +31,13 @@
     {
       "name": "Smtp__Host",
       "required": true,
+      "smtp": "host",
       "description": "SMTP server host used for sending"
     },
     {
       "name": "Smtp__Port",
       "required": false,
+      "smtp": "port",
       "default": "587",
       "description": "SMTP port"
     },
@@ -51,12 +54,13 @@
     {
       "name": "Smtp__UseStartTls",
       "required": false,
-      "default": "true",
-      "description": "Enables STARTTLS"
+      "default": "false",
+      "description": "Enables STARTTLS. Defaults to false so the dev Mailpit (no TLS) works; set to true for a real relay"
     },
     {
       "name": "Smtp__FromAddress",
-      "required": true,
+      "required": false,
+      "default": "no-reply@ostrun.dev",
       "description": "Sender address for emails"
     },
     {
