@@ -29,6 +29,10 @@ CI runs the build and tests on every pull request; it must pass before merging.
 - Changing a published event's shape requires a new contract version (e.g. `EmailSent.v2.json`) rather than editing the existing one.
 - Write commit messages and code comments in English.
 
+## Versioning
+
+Releases follow the catalog's versioning rule: see [Versioning a service](https://github.com/ostrun-labs/ostrun/blob/main/CONTRIBUTING.md#versioning-a-service) in Ostrun's CONTRIBUTING (tag format, semver, release flow). It is not repeated here.
+
 ## License
 
 By contributing, you agree that your contributions are licensed under the [Apache License 2.0](LICENSE).
